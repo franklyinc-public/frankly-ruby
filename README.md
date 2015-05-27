@@ -1,2 +1,18 @@
-# frankly-ruby
-Ruby module for using Frankly API.
+frankly-ruby
+============
+
+Ruby gem for interacting with the Frankly API.
+
+Installation
+------------
+
+```
+$ gem install frankly-ruby
+```
+
+Usage
+-----
+
+```ruby
+require 'franklyclient'
+```
