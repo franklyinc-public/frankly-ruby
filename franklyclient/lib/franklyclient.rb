@@ -22,19 +22,198 @@
 # SOFTWARE.
 ##
 
+# = Usage
+# The sections below explain how to use the module to authenticate and query the <b>
+# Frankly API</b>.
+#
+# All operations to the API are made from instances of the <b>FranklyClient</b> class. Those
+# objects expose methods to the application which map to remote procedure calls (RPC)
+# on the <b>Frankly</b> servers, they also negotiate and maintain the state required by the
+# API's security policies.
+#
+# Here's how <b>FranklyClient</b> instances are created:
+#     require 'franklyclient'
+#     client = FranklyClient.new
+#
+# == Authentication
+# Before performing any operation (calling any method) the client instance needs to authenticate
+# against Frankly API. The API supports different level of permissions but this module is design
+# to only allow <em>admin</em> authentication.
+#
+# When authenticating as an <em>admin</em> user the client needs to be given the <b>app_key</b>
+# and <b>app_secret</b> values obtained from the {Frankly Console}[https://console.franklychat.com/].
+#
+# Here's how to perform authentication:
+#     require 'franklyclient'
+#
+#     app_key    = 'app_key from Frankly Console'
+#     app_secret = 'app_secret from Frankly Console'
+#
+#     client = FranklyClient.new
+#     client.open(app_key, app_secret)
+#
+# If the call to <b>open</b> returns then authentication was successful and the application can move
+# on and use this instance of <b>FranklyClient</b> to perform other operations.
+#
+# <em>Publishing the</em> <b>app_secret</b> <em>value to the public can have security implications
+# and could be used by an attacker to alter the content of an application.</em>
+#
+# == Rooms
+# One of the central concepts in the <b>Frankly API</b> is the chat room. An application can create,
+# update and delete chat rooms. A chat room can be seen as a collection of messages, with some
+# associated meta-data like the title, description or avatar image to be displayed when the end users
+# access the mobile or web app embedding a <b>Frankly SDK</b>.
+#
+# This code snippet shows how to create chat rooms:
+#     require 'franklyclient'
+#
+#     room_payload = {
+#       title:       'Hi',
+#       description: 'My First Chat Room',
+#       status:      'active'
+#     }
+#     room = client.create_room(room_payload)
+#
+# As we can see here, when creating a room the application must specify a <em>status</em> property
+# which can be one of the following:
+# * <b>unpublished</b> in this state the room will not be shown to clients fetching the list of
+#   available rooms in the app, this is useful if the application needs to create rooms that shouldn't
+#   be available yet because they still need to be modified.
+#
+# * <b>active</b> in this state the room will be displayed in all clients fetching the list of available
+#   rooms that end users can join to start chatting with each other.
+#
+# * <b>inactive</b> this last state is an intermediary state between the first two, the room will be
+#   part of fetching operations but they will not be displayed in the mobile or web app UI, it is useful
+#   for testing purposes.
+#
+# == Message
+# Frankly being a chat platform it allows applications to send and receive messages. Naturally
+# <b>FranklyClient</b> instances can publish and fetch messages to chat rooms.
+#
+# This code snippet shows how to create messages:
+#     require 'franklyclient'
+#
+#     message1_payload = {
+#       contents: [{
+#         type:  'text/plain',
+#         value: 'Hello World!'
+#       }]
+#     }
+#     message1 = client.create_room_message(room['id'],create_payload)
+#
+#     message2_payload = {
+#       contents: [{
+#         type: 'image/*',
+#         url:  'https://app.franklychat.com/files/...'
+#       }]
+#     }
+#     message2 = client.create_room_message(room['id'],create_payload)
+#
+# Let's explain quickly what's happening here: messages published to chat rooms actually support multiple
+# parts, they may contain few text entries, or a text and an image, etc... So the <em>contents</em> property
+# is actually a list of objects. Fields of the content objects are:
+# * <b>type</b> which is the mime type of the actual content it represent and gives the application
+#   informations about how to render the content. This is mandatory.
+#
+# * <b>value</b> which is used for inline resources directly embedded into the message.
+#
+# * <b>url</b> which is used for remote resources that the application can upload and download in parallel of
+#   sending or receiving messages. One of <em>value</em> or <em>url</em> must be specified.
+#
+# Typically, text messages are inlined because they are small enough resources that they can be embedded into
+# the message without impact user experience. Images on the other end may take a while to download and rendering
+# can be optimized using caching mechanisms to avoid downloading large resources too often, that's why they should
+# provided as a remote resource (we'll see later in the <em>Files</em> section how to generate remote resource URLs).
+#
+# <em>Keep in mind that messages will be broadcasted to every client application currently listening for messages
+# on the same chat room when they are created.</em>
+#
+# == Announcements
+# Announcements are a different type of messages which are only available to admin users.
+# A client authenticated with admin priviledges can create announcements in the app, which can then be published
+# to one or more rooms at a later time.
+#
+# In mobile and web apps embedding a <b>Frankly SDK</b>, announcements are rendered differently from regular messages,
+# they are highlighted and can be forced to stick at the top of the chat room UI to give some context to end users
+# about what is currently ongoing.
+#
+# Here's how an app using the frankly module would create and then publish announcements:
+#     require 'franklyclient'
+#
+#     anno_payload = {
+#       contents: [{
+#         type:  'text/plain',
+#         value: 'Hello World!'
+#       }]
+#     }
+#
+#     anno = client.create_announcement(anno_payload)
+#     client.create_room_message(room.id, {announcement: anno['id']})
+# As we can see here, the announcement is created with the same structure than a regular message. The content of the
+# announcement is actually what is going to be set as the message content when published to a room and obeys the same
+# rules that were described in the <em>Messages</em> section regarding inline and remote content.
+#
+# == Files
+# Objects of the <b>Frankly API</b> can have URL properties set to reference remote resources like images. All these
+# URLs must be within the <b>+https://app.franklychat.com+</b> domain, which means an application must upload these
+# resources to Frankly servers.
+#
+# Uploading a file happens in two steps, first the application needs to request a new file URL to the <b>Frankly API</b>,
+# then it can use that URL to upload a resource to Frankly servers. Lukily the frankly module abstracts this nicely in a
+# single operation, here's an example of how to set an image for a chat room:
+#     require 'franklyclient'
+#
+#     file_payload = {
+#       category:  'useravatar',
+#       type: 'image'
+#     }
+#
+#     file = client.upload_file_from_path('./path/to/image.pnp',file_payload)
+#     room = client.update_room(room.id, {avatar_image_url = file['url']})
+#
+# The object returned by a call to <b>+upload_file_from_path+</b> and other upload methods is created in the first step
+# described above. The <b>+category+</b> parameter shown here is a hint given the the <b>Frankly API</b> to know what
+# formatting rules should be applied to the resource. This is useful to provide a better integration with Frankly and
+# better user experience as files will be optimized for different situations based on their category.
+#
+# Here are the file categories currently available:
+# * <b>chat</b>
+#   The default category which is usually applied to images sent by end users.
+#
+# * <b>useravatar</b>
+#   This category optimizes files intended to be displayed as part of a user profile.
+#
+# * <b>roomavatar</b>
+#   This category optimizes files intended to be displayed on room lists.
+#
+# * <b>featuredavatar</b>
+#   Used for files intended to be displayed to represent featued rooms.
+#
+# * <b>sticker</b>
+#   This category optimizes files that are used for sticker messages.
+#
+# * <b>stickerpack</b>
+#   for being used as an avatar of a sticker pack.
+#
+
 # @!visibility private
 require 'json'
 require 'jwt'
 require 'rest-client'
 require 'uri'
+require 'io/console'
+require 'filemagic'
 
 require 'franklyclient/auth'
+require 'franklyclient/announcement'
 require 'franklyclient/files'
+require 'franklyclient/generic'
 require 'franklyclient/message'
 require 'franklyclient/rooms'
 require 'franklyclient/util'
 
-# This sfunction generates an identity token suitable for a single authentication attempt
+# This function generates an identity token suitable for a single authentication attempt
 # of a client against the Frankly API or SDK
 #
 # @param app_key [String]
@@ -102,6 +281,7 @@ class FranklyClient
   # @return [nil]
   #  The method doesn't return anything, it modified the internal
   #  state of the object it is called on.
+
   def open(app_key, app_secret)
     nonce = Auth.nonce[1..-2]
 
@@ -368,7 +548,7 @@ class FranklyClient
   # @return [Hash]
   #   The method returns a hash that represents the newly created message.
   def create_room_message(room_id, payload)
-    JSON.parse Message.create_room_message(@headers, @session_token, room_id, payload.to_json)
+    JSON.parse Message.create_room_message(@headers, @session_token, room_id, payload)
   end
 
   # Creates a new message object in the room with id specified as first argument.

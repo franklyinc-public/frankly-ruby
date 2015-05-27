@@ -142,7 +142,6 @@ class FranklyClientTest < MiniTest::Unit::TestCase
       type: 'image'
     }
     fu = fc.create_file(file_payload)
-    puts fu
 
     assert_equal('useravatar', fu['category'])
     refute_equal(nil, fu['created_on'])

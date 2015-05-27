@@ -22,9 +22,6 @@
 # SOFTWARE.
 ##
 
-require 'io/console'
-require 'filemagic'
-
 # @!visibility private
 class Files
   def self.create_file(headers, sessionToken, payload)

@@ -27,14 +27,14 @@
 class Message
   def self.create_room_message(headers, sessionToken, room_id, payload)
     headers[:params] = { token: sessionToken}
-    if payload.haskey?("announcement")
+    if payload.has_key?("announcement")
       headers[:params][:announcement] = payload.delete("announcement")
     end
     RestClient::Request.execute(
       method: 'post',
       url: Util.build_url('rooms/' + room_id.to_s + '/messages'),
       headers: headers,
-      payload: payload
+      payload: payload.to_json
     )
   end
 
