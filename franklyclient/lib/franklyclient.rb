@@ -142,6 +142,7 @@
 #     require 'franklyclient'
 #
 #     anno_payload = {
+#       contextual: true,
 #       contents: [{
 #         type:  'text/plain',
 #         value: 'Hello World!'
@@ -284,20 +285,6 @@ class FranklyClient
 
   def open(app_key, app_secret)
     nonce = Auth.nonce[1..-2]
-
-    auth_header = {
-      typ: 'JWS',
-      alg: 'HS256',
-      cty: 'frankly-it;v1'
-    }
-
-    auth_claims = {
-      aak: app_key,
-      iat: Time.now.to_i,
-      exp: Time.now.to_i + 10 * 24 * 60 * 60,
-      nce: nonce,
-      role: 'admin'
-    }
 
     identity_token = generate_identity_token(app_key, app_secret, nonce, nil, 'admin')
     session = JSON.parse Auth.open(identity_token)
@@ -487,7 +474,7 @@ class FranklyClient
   # @return [Hash]
   #   The method returns a hash that represents the newly created announcement.
   def create_announcement(payload)
-    Json.parse Announcement.create_announcement(@headers, @session_token, payload)
+    JSON.parse Announcement.create_announcement(@headers, @session_token, payload.to_json)
   end
 
   # Retrieves an announcement object with id sepecified as first argument from the app.
@@ -498,7 +485,7 @@ class FranklyClient
   # @return [Hash]
   #  The method returns a hash representing the announcement wit the specified id in the app.
   def read_announcement(announcement_id)
-    Json.parse Announcement.read_announcement(@headers, @session_token, announcement_id)
+    JSON.parse Announcement.read_announcement(@headers, @session_token, announcement_id)
   end
 
   # Deletes an announcement object with id sepecified as first argument from the app.
@@ -511,7 +498,7 @@ class FranklyClient
   # @return [nil]
   #   The method doesn't return anything on success and throws an exception on failure.
   def delete_announcement(announcement_id)
-    Json.parse Announcement.delete_announcement(@headers, @session_token, announcement_id)
+    Announcement.delete_announcement(@headers, @session_token, announcement_id)
   end
 
   # Retrieves a list of announcements available in the app.
@@ -520,19 +507,19 @@ class FranklyClient
   #   The method returns an array of annoucement hashes ordered by id, which may be empty if
   #   there are no announcements in the app.
   def read_announcement_list
-    Json.parse Announcement.read_announcement_list(@headers, @session_token)
+    JSON.parse Announcement.read_announcement_list(@headers, @session_token)
   end
 
-  # Retrieves a list of announcements available in the app.
+  # Retrieves the list of rooms that an annoucement has been published to.
   #
   # @param announcement_id [Int]
-  #   The identifier of the announcement to fetch.
+  #   The identifier of the announcement to get the list of rooms for.
   #
   # @return [Array]
-  #   The method returns an array of annoucement hashes ordered by id, which may be empty if
-  #   there are no announcements in the app.
+  #   The method returns a list of room objects ordered by id, which may be empty
+  #   if the announcement haven't been published yet.
   def read_announcement_room_list(announcement_id)
-    Json.parse Announcement.read_announcement_room_list(@headers, @session_token, announcement_id)
+    JSON.parse Announcement.read_announcement_room_list(@headers, @session_token, announcement_id)
   end
 
   # Creates a new message object in the room with id specified as first argument.
@@ -564,7 +551,7 @@ class FranklyClient
   # @return [Array]
   #   The method returns an array of room hashes which may be empty if no messages satisfy the query.
   def read_room_message_list(room_id, params)
-    Json.parse Message.read_room_message_list(@headers, @session_token, room_id, params)
+    JSON.parse Message.read_room_message_list(@headers, @session_token, room_id, params)
   end
 
   # Creates a new file object on Frankly servers and returns that object.

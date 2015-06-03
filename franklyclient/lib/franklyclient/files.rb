@@ -25,7 +25,7 @@
 # @!visibility private
 class Files
   def self.create_file(headers, sessionToken, payload)
-    headers[:params] = { token: sessionToken}
+    headers[:params] = { token: sessionToken }
     RestClient::Request.execute(
       method: 'post',
       url: Util.build_url('files'),
@@ -36,7 +36,7 @@ class Files
 
   def self.update_file(headers, sessionToken, destination_url, file_obj, file_size, mime_type, encoding = nil)
     headers[:cookies] = cookies
-    headers[:params] = { token: sessionToken}
+    headers[:params] = { token: sessionToken }
     headers['content-length'] = file_size
     headers['content-type'] = mime_type
     headers['content-encoding'] = encoding

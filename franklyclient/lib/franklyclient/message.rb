@@ -26,9 +26,9 @@
 
 class Message
   def self.create_room_message(headers, sessionToken, room_id, payload)
-    headers[:params] = { token: sessionToken}
-    if payload.has_key?("announcement")
-      headers[:params][:announcement] = payload.delete("announcement")
+    headers[:params] = { token: sessionToken }
+    if payload.key?(:announcement)
+      headers[:params][:announcement] = payload.delete(:announcement)
     end
     RestClient::Request.execute(
       method: 'post',

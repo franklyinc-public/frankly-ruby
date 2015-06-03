@@ -25,7 +25,7 @@
 # @!visibility private
 class Rooms
   def self.create_room(headers, sessionToken, payload)
-    headers[:params] = { token: sessionToken}
+    headers[:params] = { token: sessionToken }
     RestClient::Request.execute(
       method: 'post',
       url: Util.build_url('rooms'),
@@ -35,7 +35,7 @@ class Rooms
   end
 
   def self.read_room_list(headers, sessionToken)
-    headers[:params] = { token: sessionToken}
+    headers[:params] = { token: sessionToken }
     RestClient::Request.execute(
       method: 'get',
       url: Util.build_url('rooms'),
@@ -44,7 +44,7 @@ class Rooms
   end
 
   def self.read_room(headers, sessionToken, room_id)
-    headers[:params] = { token: sessionToken}
+    headers[:params] = { token: sessionToken }
     RestClient::Request.execute(
       method: 'get',
       url: Util.build_url('rooms/' + room_id.to_s),
@@ -53,7 +53,7 @@ class Rooms
   end
 
   def self.update_room(headers, sessionToken, room_id, payload)
-   headers[:params] = { token: sessionToken}
+    headers[:params] = { token: sessionToken }
     RestClient::Request.execute(
       method: 'put',
       url: Util.build_url('rooms/' + room_id.to_s),
@@ -63,7 +63,7 @@ class Rooms
   end
 
   def self.delete_room(headers, sessionToken, room_id)
-   headers[:params] = { token: sessionToken}
+    headers[:params] = { token: sessionToken }
     RestClient::Request.execute(
       method: 'delete',
       url: Util.build_url('rooms/' + room_id.to_s),

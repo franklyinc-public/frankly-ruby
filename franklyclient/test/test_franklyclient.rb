@@ -33,9 +33,127 @@ class FranklyClientTest < MiniTest::Unit::TestCase
   end
 
   def test_open
+    client = FranklyClient.new
+    client.open(@auth_key, @auth_secret)
+    refute_equal('', client.instance_variable_get(:@sessionToken))
+    client.close
+  end
+
+  def test_announcement_functions
+    client = FranklyClient.new
+    client.open(@auth_key, @auth_secret)
+
+    room_title = 'test create room: ' + rand(36**4).to_s(36)
+    room_payload = {
+      status: 'active',
+      title: room_title
+    }
+    room = client.create_room(room_payload)
+
+    announcement_payload = {
+      contextual: true,
+      contents: [
+        {
+          type:       'text/plain',
+          value:      'text'
+        }
+      ]
+    }
+
+    announcement = client.create_announcement(announcement_payload)
+
+    assert_equal([{ 'type' => 'text/plain', 'value' => 'text' }], announcement['contents'])
+    assert_equal(true, announcement['contextual'])
+    refute_equal(nil, announcement['created_on'])
+    refute_equal(nil, announcement['id'])
+    refute_equal(nil, announcement['updated_on'])
+    assert_equal(1, announcement['version'])
+
+    read_announcement = client.read_announcement(announcement['id'])
+    assert_equal(read_announcement, announcement)
+
+    announcement_list = client.read_announcement_list
+    assert_equal(true, announcement_list.include?(announcement))
+
+    published_announcement = client.create_room_message(room['id'], announcement: announcement['id'])
+
+    assert_equal([{ 'type' => 'text/plain', 'value' => 'text' }], published_announcement['contents'])
+    assert_equal(true, published_announcement['contextual'])
+    refute_equal(nil, published_announcement['created_on'])
+    refute_equal(nil, published_announcement['id'])
+    assert_equal(room['id'], published_announcement['room_id'])
+    refute_equal(nil, published_announcement['sent_on'])
+    refute_equal(nil, published_announcement['updated_on'])
+    assert_equal(1, published_announcement['version'])
+
+    announcement_room_list = client.read_announcement_room_list(announcement['id'])
+    assert_equal(true, announcement_room_list.include?(room))
+
+    client.delete_announcement(announcement['id'])
+
+    announcement_list = client.read_announcement_list
+    refute_equal(true, announcement_list.include?(announcement))
+
+    announcement_room_list = client.read_announcement_room_list(announcement['id'])
+    assert_equal(true, announcement_room_list.include?(room))
+  end
+
+  def test_file_functions
+    client = FranklyClient.new
+    client.open(@auth_key, @auth_secret)
+
+    file_payload = {
+      category: 'useravatar',
+      type: 'image'
+    }
+    file = client.create_file(file_payload)
+
+    assert_equal('useravatar', file['category'])
+    refute_equal(nil, file['created_on'])
+    refute_equal(nil, file['id'])
+    assert_equal('image', file['type'])
+    refute_equal(nil, file['updated_on'])
+    refute_equal(nil, file['url'])
+    assert_equal(1, file['version'])
+
+    # To test file upload, replace my_file with a local file path
+    # myfile = '/file/path.jpg'
+    # h = fc.update_file_from_path(file['url'], my_file)
+    # assert_equal(200, h.code)
+    client.close
+  end
+
+  def test_message_functions
     fc = FranklyClient.new
     fc.open(@auth_key, @auth_secret)
-    refute_equal('', fc.instance_variable_get(:@sessionToken))
+
+    room_title = 'test create room: ' + rand(36**4).to_s(36)
+    room_payload = {
+      status: 'active',
+      title: room_title
+    }
+    cr = fc.create_room(room_payload)
+
+    message_payload = {
+      contents: [
+        {
+          type: 'text/plain',
+          value: 'text'
+        }
+      ]
+    }
+    m = fc.create_room_message(cr['id'], message_payload)
+
+    assert_equal([{ 'type' => 'text/plain', 'value' => 'text' }], m['contents'])
+    assert_equal(false, m['contextual'])
+    refute_equal(nil, m['created_on'])
+    refute_equal(nil, m['id'])
+    assert_equal(cr['id'], m['room_id'])
+    refute_equal(nil, m['sent_on'])
+    refute_equal(nil, m['updated_on'])
+    assert_equal(1, m['version'])
+
+    fc.delete_room(cr['id'])
     fc.close
   end
 
@@ -44,7 +162,7 @@ class FranklyClientTest < MiniTest::Unit::TestCase
     fc.open(@auth_key, @auth_secret)
 
     # Test room creation
-    create_room_title = 'test create room: ' + rand(36**10).to_s(36)
+    create_room_title = 'test create room: ' + rand(36**4).to_s(36)
     create_payload = {
       status: 'active',
       title: create_room_title
@@ -68,7 +186,7 @@ class FranklyClientTest < MiniTest::Unit::TestCase
     assert_equal(cr, rr)
 
     # Test room update
-    update_room_title = 'test update room: ' + rand(36**10).to_s(36)
+    update_room_title = 'test update room: ' + rand(36**4).to_s(36)
     update_payload = {
       description: 'updated description',
       title: update_room_title,
@@ -96,65 +214,6 @@ class FranklyClientTest < MiniTest::Unit::TestCase
     fc.delete_room(cr['id'])
     rl = fc.read_room_list
     refute_equal(true, rl.include?(ur))
-    fc.close
-  end
-
-  def test_message_functions
-    fc = FranklyClient.new
-    fc.open(@auth_key, @auth_secret)
-
-    create_room_title = 'test create room: ' + rand(36**10).to_s(36)
-    create_payload = {
-      status: 'active',
-      title: create_room_title
-    }
-    cr = fc.create_room(create_payload)
-
-    message_payload = {
-      contents: [
-        {
-          type: 'text/plain',
-          value: 'text'
-        }
-      ]
-    }
-    m = fc.create_room_message(cr['id'], message_payload)
-
-    assert_equal([{ 'type' => 'text/plain', 'value' => 'text' }], m['contents'])
-    assert_equal(false, m['contextual'])
-    refute_equal(nil, m['created_on'])
-    refute_equal(nil, m['id'])
-    assert_equal(cr['id'], m['room_id'])
-    refute_equal(nil, m['sent_on'])
-    refute_equal(nil, m['updated_on'])
-    assert_equal(1, m['version'])
-
-    fc.delete_room(cr['id'])
-    fc.close
-  end
-
-  def test_file_functions
-    fc = FranklyClient.new
-    fc.open(@auth_key, @auth_secret)
-
-    file_payload = {
-      category: 'useravatar',
-      type: 'image'
-    }
-    fu = fc.create_file(file_payload)
-
-    assert_equal('useravatar', fu['category'])
-    refute_equal(nil, fu['created_on'])
-    refute_equal(nil, fu['id'])
-    assert_equal('image', fu['type'])
-    refute_equal(nil, fu['updated_on'])
-    refute_equal(nil, fu['url'])
-    assert_equal(1, fu['version'])
-
-    # To test file upload, replace my_file with a local file path
-    # myfile = '/file/path.jpg'
-    # h = fc.update_file_from_path(fu['url'], my_file)
-    # assert_equal(200, h.code)
     fc.close
   end
 end

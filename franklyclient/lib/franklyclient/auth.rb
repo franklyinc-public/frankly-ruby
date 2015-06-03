@@ -30,7 +30,7 @@ class Auth
 
   def self.open(identityToken)
     headers = Util.build_headers
-  	headers[:params] = { identity_token: identityToken }
+    headers[:params] = { identity_token: identityToken }
     session = RestClient.get(Util.build_url('auth'), headers)
     session
   end

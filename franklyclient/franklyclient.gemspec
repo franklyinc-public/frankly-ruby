@@ -5,8 +5,9 @@ Gem::Specification.new do |s|
   s.authors     = ['Michael Phox', 'Achille Roussel']
   s.files       = [
     'lib/franklyclient.rb',
-    'lib/franklyclient/auth.rb',
     'lib/franklyclient/announcement.rb',
+    'lib/franklyclient/auth.rb',
+    'lib/franklyclient/files.rb',
     'lib/franklyclient/generic.rb',
     'lib/franklyclient/message.rb',
     'lib/franklyclient/rooms.rb',

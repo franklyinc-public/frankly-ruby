@@ -24,8 +24,8 @@
 
 # @!visibility private
 class Announcement
-  def self.create_announcement(headers, cookies, payload)
-    headers[:cookies] = cookies
+  def self.create_announcement(headers, sessionToken, payload)
+    headers[:params] = { token: sessionToken }
     RestClient::Request.execute(
       method: 'post',
       url: Util.build_url('announcements'),
@@ -34,8 +34,8 @@ class Announcement
     )
   end
 
-  def self.read_announcement(headers, cookies, announcement_id)
-    headers[:cookies] = cookies
+  def self.read_announcement(headers, sessionToken, announcement_id)
+    headers[:params] = { token: sessionToken }
     RestClient::Request.execute(
       method: 'get',
       url: Util.build_url('announcements/' + announcement_id.to_s),
@@ -43,8 +43,8 @@ class Announcement
     )
   end
 
-  def self.delete_announcement(headers, cookies, announcement_id)
-    headers[:cookies] = cookies
+  def self.delete_announcement(headers, sessionToken, announcement_id)
+    headers[:params] = { token: sessionToken }
     RestClient::Request.execute(
       method: 'delete',
       url: Util.build_url('announcements/' + announcement_id.to_s),
@@ -52,8 +52,8 @@ class Announcement
     )
   end
 
-  def self.read_announcement_list(headers, cookies)
-    headers[:cookies] = cookies
+  def self.read_announcement_list(headers, sessionToken)
+    headers[:params] = { token: sessionToken }
     RestClient::Request.execute(
       method: 'get',
       url: Util.build_url('announcements'),
@@ -61,8 +61,8 @@ class Announcement
     )
   end
 
-  def self.read_announcement_room_list(headers, cookies, announcement_id)
-    headers[:cookies] = cookies
+  def self.read_announcement_room_list(headers, sessionToken, announcement_id)
+    headers[:params] = { token: sessionToken }
     RestClient::Request.execute(
       method: 'get',
       url: Util.build_url('announcements/' + announcement_id.to_s + '/rooms'),
