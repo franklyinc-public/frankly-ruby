@@ -199,12 +199,13 @@
 #
 
 # @!visibility private
+require 'charlock_holmes'
+require 'io/console'
 require 'json'
 require 'jwt'
+require 'mimemagic'
 require 'rest-client'
 require 'uri'
-require 'io/console'
-require 'filemagic'
 
 require 'franklyclient/auth'
 require 'franklyclient/announcement'

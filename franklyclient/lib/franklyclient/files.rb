@@ -35,7 +35,6 @@ class Files
   end
 
   def self.update_file(headers, sessionToken, destination_url, file_obj, file_size, mime_type, encoding = nil)
-    headers[:cookies] = cookies
     headers[:params] = { token: sessionToken }
     headers['content-length'] = file_size
     headers['content-type'] = mime_type
@@ -55,10 +54,8 @@ class Files
   def self.update_file_from_path(headers, sessionToken, destination_url, file_path)
     file_obj = File.open(file_path, 'rb')
     file_size = File.size(file_path)
-    mime_enc = FileMagic.new(FileMagic::MAGIC_MIME).file(file_path)
-    mime_type = mime_enc.slice(0..(mime_enc.index(';') - 1))
-    encoding = mime_enc.slice((mime_enc.index('=') + 1)..-1)
-
+    mime_type = MimeMagic.by_magic(file_obj)
+    encoding = CharlockHolmes::EncodingDetector.detect(File.read(file_path))[:type]
     update_file(headers, sessionToken, destination_url, file_obj, file_size, mime_type, encoding)
   end
 

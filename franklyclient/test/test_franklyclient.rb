@@ -117,10 +117,10 @@ class FranklyClientTest < MiniTest::Unit::TestCase
     assert_equal(1, file['version'])
 
     # To test file upload, replace my_file with a local file path
-    # myfile = '/file/path.jpg'
-    # h = fc.update_file_from_path(file['url'], my_file)
-    # assert_equal(200, h.code)
-    client.close
+    # my_file = '/file/path.jpg'
+    # response = client.update_file_from_path(file['url'], my_file)
+    # assert_equal(200, response.code)
+    # client.close
   end
 
   def test_message_functions
