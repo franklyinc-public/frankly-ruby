@@ -1,6 +1,6 @@
 Gem::Specification.new do |s|
   s.name        = 'frankly-ruby'
-  s.version     = '1.0.1'
+  s.version     = '1.0.2'
   s.summary     = 'Frankly Ruby SDK'
   s.authors     = ['Michael Phox', 'Achille Roussel']
   s.files       = [
