@@ -1,4 +1,4 @@
-frankly-ruby
+Frankly Ruby SDK
 ============
 
 Ruby gem for interacting with the Frankly API.
@@ -22,3 +22,8 @@ Usage
 ```ruby
 require 'frankly-ruby'
 ```
+
+Documentation
+-------------
+
+Please find the complete iOS integration guide at <a>http://franklyinc.github.io/frankly-ios</a>
