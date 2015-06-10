@@ -17,9 +17,11 @@ Gem::Specification.new do |s|
     'https://github.com/franklyinc/frankly-ruby/'
   s.license       = 'MIT'
 
+  s.add_runtime_dependency 'charlock_holmes', '~> 0.7', '>= 0.7.3'
   s.add_runtime_dependency 'io-console', '~> 0.4', '>= 0.4.2'
   s.add_runtime_dependency 'json', '~> 1.8', '>= 1.8.1'
   s.add_runtime_dependency 'jwt', '~> 1.4', '>= 1.4.1'
+  s.add_runtime_dependency 'mimemagic', '~> 0.3', '>= 0.3.0'
   s.add_runtime_dependency 'rest-client', '~> 1.8', '>= 1.8.0'
 
   s.add_development_dependency 'minitest', '~> 5.4', '>= 5.4.3'
