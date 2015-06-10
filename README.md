@@ -3,6 +3,7 @@ Frankly Ruby SDK
 
 Ruby gem for interacting with the Frankly API.
 
+
 Installation
 ------------
 
@@ -16,12 +17,14 @@ then run
 bundle install
 ```
 
+
 Usage
 -----
 
 ```ruby
 require 'frankly-ruby'
 ```
+
 
 Documentation
 -------------
