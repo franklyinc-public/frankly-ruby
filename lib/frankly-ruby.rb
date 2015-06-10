@@ -32,7 +32,7 @@
 # API's security policies.
 #
 # Here's how <b>FranklyClient</b> instances are created:
-#     require 'franklyclient'
+#     require 'frankly-ruby'
 #     client = FranklyClient.new
 #
 # == Authentication
@@ -44,7 +44,7 @@
 # and <b>app_secret</b> values obtained from the {Frankly Console}[https://console.franklychat.com/].
 #
 # Here's how to perform authentication:
-#     require 'franklyclient'
+#     require 'frankly-ruby'
 #
 #     app_key    = 'app_key from Frankly Console'
 #     app_secret = 'app_secret from Frankly Console'
@@ -65,7 +65,7 @@
 # access the mobile or web app embedding a <b>Frankly SDK</b>.
 #
 # This code snippet shows how to create chat rooms:
-#     require 'franklyclient'
+#     require 'frankly-ruby'
 #
 #     room_payload = {
 #       title:       'Hi',
@@ -92,7 +92,7 @@
 # <b>FranklyClient</b> instances can publish and fetch messages to chat rooms.
 #
 # This code snippet shows how to create messages:
-#     require 'franklyclient'
+#     require 'frankly-ruby'
 #
 #     message1_payload = {
 #       contents: [{
@@ -139,7 +139,7 @@
 # about what is currently ongoing.
 #
 # Here's how an app using the frankly module would create and then publish announcements:
-#     require 'franklyclient'
+#     require 'frankly-ruby'
 #
 #     anno_payload = {
 #       sticky: true,
@@ -163,7 +163,7 @@
 # Uploading a file happens in two steps, first the application needs to request a new file URL to the <b>Frankly API</b>,
 # then it can use that URL to upload a resource to Frankly servers. Lukily the frankly module abstracts this nicely in a
 # single operation, here's an example of how to set an image for a chat room:
-#     require 'franklyclient'
+#     require 'frankly-ruby'
 #
 #     file_payload = {
 #       category:  'useravatar',
@@ -207,13 +207,13 @@ require 'mimemagic'
 require 'rest-client'
 require 'uri'
 
-require 'franklyclient/auth'
-require 'franklyclient/announcement'
-require 'franklyclient/files'
-require 'franklyclient/generic'
-require 'franklyclient/message'
-require 'franklyclient/rooms'
-require 'franklyclient/util'
+require 'frankly-ruby/auth'
+require 'frankly-ruby/announcement'
+require 'frankly-ruby/files'
+require 'frankly-ruby/generic'
+require 'frankly-ruby/message'
+require 'frankly-ruby/rooms'
+require 'frankly-ruby/util'
 
 # This function generates an identity token suitable for a single authentication attempt
 # of a client against the Frankly API or SDK

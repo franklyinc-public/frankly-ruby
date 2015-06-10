@@ -22,7 +22,7 @@
 # SOFTWARE.
 ##
 
-require 'franklyclient'
+require 'frankly-ruby'
 
 require 'minitest/autorun'
 

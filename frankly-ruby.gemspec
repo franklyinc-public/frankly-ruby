@@ -4,17 +4,17 @@ Gem::Specification.new do |s|
   s.summary     = 'Frankly Ruby SDK'
   s.authors     = ['Michael Phox', 'Achille Roussel']
   s.files       = [
-    'lib/franklyclient.rb',
-    'lib/franklyclient/announcement.rb',
-    'lib/franklyclient/auth.rb',
-    'lib/franklyclient/files.rb',
-    'lib/franklyclient/generic.rb',
-    'lib/franklyclient/message.rb',
-    'lib/franklyclient/rooms.rb',
-    'lib/franklyclient/util.rb'
+    'lib/frankly-ruby.rb',
+    'lib/frankly-ruby/announcement.rb',
+    'lib/frankly-ruby/auth.rb',
+    'lib/frankly-ruby/files.rb',
+    'lib/frankly-ruby/generic.rb',
+    'lib/frankly-ruby/message.rb',
+    'lib/frankly-ruby/rooms.rb',
+    'lib/frankly-ruby/util.rb'
   ]
   s.homepage    =
-    'https://github.com/franklyinc/frankly-gem/'
+    'https://github.com/franklyinc/frankly-ruby/'
   s.license       = 'MIT'
 
   s.add_runtime_dependency 'io-console', '~> 0.4', '>= 0.4.2'
