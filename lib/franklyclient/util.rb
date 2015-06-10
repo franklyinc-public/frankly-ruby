@@ -24,11 +24,8 @@
 
 # @!visibility private
 class Util
-  FRANKLY_BASE_URL = 'https://dev-app.franklychat.com/'
-  # FRANKLY_BASE_URL = 'http://127.0.0.1:8000/'
-
-  def self.build_url(path)
-    FRANKLY_BASE_URL + path
+  def self.build_url(base_url, path)
+    base_url + path
   end
 
   def self.build_headers

@@ -25,25 +25,25 @@
 # @!visibility private
 
 class Message
-  def self.create_room_message(headers, sessionToken, room_id, payload)
+  def self.create_room_message(address, headers, sessionToken, room_id, payload)
     headers[:params] = { token: sessionToken }
     if payload.key?(:announcement)
       headers[:params][:announcement] = payload.delete(:announcement)
     end
     RestClient::Request.execute(
       method: 'post',
-      url: Util.build_url('rooms/' + room_id.to_s + '/messages'),
+      url: Util.build_url(address, 'rooms/' + room_id.to_s + '/messages'),
       headers: headers,
       payload: payload.to_json
     )
   end
 
-  def self.read_room_message_list(headers, sessionToken, room_id, params)
+  def self.read_room_message_list(address, headers, sessionToken, room_id, params)
     headers[:params] = params
     headers[:params][:token] = sessionToken
     RestClient::Request.execute(
       method: 'get',
-      url: Util.build_url('rooms/' + room_id.to_s + '/messages'),
+      url: Util.build_url(address, 'rooms/' + room_id.to_s + '/messages'),
       headers: headers
     )
   end

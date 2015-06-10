@@ -142,7 +142,7 @@
 #     require 'franklyclient'
 #
 #     anno_payload = {
-#       contextual: true,
+#       sticky: true,
 #       contents: [{
 #         type:  'text/plain',
 #         value: 'Hello World!'
@@ -263,10 +263,13 @@ end
 # Instances of this class can be used to authenticate and query the Frankly REST
 # APIs.
 class FranklyClient
-  def initialize
+  def initialize(address='https://app.franklychat.com/')
+    @base_url = address
     @headers = {}
     @session_token = ''
   end
+
+
 
   # This should be the first method called on an instance of FranklyClient,
   # after succesfully returning the client can be used to interact with the Frankly
@@ -285,10 +288,10 @@ class FranklyClient
   #  state of the object it is called on.
 
   def open(app_key, app_secret)
-    nonce = Auth.nonce[1..-2]
+    nonce = Auth.nonce(@base_url)[1..-2]
 
     identity_token = generate_identity_token(app_key, app_secret, nonce, nil, 'admin')
-    session = JSON.parse Auth.open(identity_token)
+    session = JSON.parse Auth.open(@base_url, identity_token)
     @session_token = session['token']
     @headers = Util.build_headers
   end
@@ -309,7 +312,7 @@ class FranklyClient
   # @return [Hash]
   #   The method returns a hash that represents the newly created room.
   def create_room(payload)
-    JSON.parse Rooms.create_room(@headers, @session_token, payload.to_json)
+    JSON.parse Rooms.create_room(@base_url, @headers, @session_token, payload.to_json)
   end
 
   # Retrieves the list of all available rooms from the app.
@@ -318,7 +321,7 @@ class FranklyClient
   #   The method returns a list of hashes ordered by id, which may be empty if there are no
   #   rooms in the app.
   def read_room_list
-    JSON.parse Rooms.read_room_list(@headers, @session_token)
+    JSON.parse Rooms.read_room_list(@base_url, @headers, @session_token)
   end
 
   # Retrieves a room object with id specified as first argument from the app.
@@ -329,7 +332,7 @@ class FranklyClient
   # @return [Hash]
   #   The method returns a hash that represents the fetched room.
   def read_room(room_id)
-    JSON.parse Rooms.read_room(@headers, @session_token, room_id)
+    JSON.parse Rooms.read_room(@base_url, @headers, @session_token, room_id)
   end
 
   # Updates an existing room object in the app and return that object.
@@ -345,7 +348,7 @@ class FranklyClient
   # @return [Hash]
   #   The method returns a hash that represents the newly updated room.
   def update_room(room_id, payload)
-    JSON.parse Rooms.update_room(@headers, @session_token,
+    JSON.parse Rooms.update_room(@base_url, @headers, @session_token,
                                  room_id, payload.to_json)
   end
 
@@ -360,7 +363,7 @@ class FranklyClient
   # @return [nil]
   #   The method doesn't return anything on success and throws an exception on failure.
   def delete_room(room_id)
-    Rooms.delete_room(@headers, @session_token, room_id)
+    Rooms.delete_room(@base_url, @headers, @session_token, room_id)
   end
 
   # This method exposes a generic interface for creating objects through the Frankly API.
@@ -379,7 +382,7 @@ class FranklyClient
   #   The method returns either a hash, or an array of hashes representing the
   #   object or objects that were created.
   def create(path, params = {}, payload = {})
-    JSON.parse Generic.create(@headers, @session_token, path, params, payload)
+    JSON.parse Generic.create(@base_url, @headers, @session_token, path, params, payload)
   end
 
   # This method exposes a generic interface for reading objects through the Frankly API.
@@ -397,7 +400,7 @@ class FranklyClient
   # @return [Hash/Array]
   #   The method returns the object read from the API at the specified path.
   def read(path, params = {}, payload = {})
-    JSON.parse Generic.read(@headers, @session_token, path, params, payload)
+    JSON.parse Generic.read(@base_url, @headers, @session_token, path, params, payload)
   end
 
   # This method exposes a generic interface for updating objects through the Frankly API.
@@ -415,7 +418,7 @@ class FranklyClient
   # @return [Hash/Array]
   #   The method returns the object updated on the API at the specified path.
   def update(path, params = {}, payload = {})
-    JSON.parse Generic.update(@headers, @session_token, path, params, payload)
+    JSON.parse Generic.update(@base_url, @headers, @session_token, path, params, payload)
   end
 
   # This method exposes a generic interface for deleting objects through the Frankly API.
@@ -434,7 +437,7 @@ class FranklyClient
   #   The method doesn't return anything on success and throws
   #   an exception on failure.
   def delete(path, params = {}, payload = {})
-    JSON.parse Generic.delete(@headers, @session_token, path, params, payload)
+    JSON.parse Generic.delete(@base_url, @headers, @session_token, path, params, payload)
   end
 
   # This method exposes a generic interface for uploading file contents through the Frankly API.
@@ -462,7 +465,7 @@ class FranklyClient
   # @return [nil]
   #   The method doesn't return anything on success and throws an exception on failure.
   def upload(url, params, payload, content_length, content_type, content_encoding)
-    JSON.parse Generic.upload(@headers, @session_token, url, params, payload, content_length, content_type, content_encoding)
+    JSON.parse Generic.upload(@base_url, @headers, @session_token, url, params, payload, content_length, content_type, content_encoding)
   end
 
   # Creates a new announcement object in the app.
@@ -475,7 +478,7 @@ class FranklyClient
   # @return [Hash]
   #   The method returns a hash that represents the newly created announcement.
   def create_announcement(payload)
-    JSON.parse Announcement.create_announcement(@headers, @session_token, payload.to_json)
+    JSON.parse Announcement.create_announcement(@base_url, @headers, @session_token, payload.to_json)
   end
 
   # Retrieves an announcement object with id sepecified as first argument from the app.
@@ -486,7 +489,7 @@ class FranklyClient
   # @return [Hash]
   #  The method returns a hash representing the announcement wit the specified id in the app.
   def read_announcement(announcement_id)
-    JSON.parse Announcement.read_announcement(@headers, @session_token, announcement_id)
+    JSON.parse Announcement.read_announcement(@base_url, @headers, @session_token, announcement_id)
   end
 
   # Deletes an announcement object with id sepecified as first argument from the app.
@@ -499,7 +502,7 @@ class FranklyClient
   # @return [nil]
   #   The method doesn't return anything on success and throws an exception on failure.
   def delete_announcement(announcement_id)
-    Announcement.delete_announcement(@headers, @session_token, announcement_id)
+    Announcement.delete_announcement(@base_url, @headers, @session_token, announcement_id)
   end
 
   # Retrieves a list of announcements available in the app.
@@ -508,7 +511,7 @@ class FranklyClient
   #   The method returns an array of annoucement hashes ordered by id, which may be empty if
   #   there are no announcements in the app.
   def read_announcement_list
-    JSON.parse Announcement.read_announcement_list(@headers, @session_token)
+    JSON.parse Announcement.read_announcement_list(@base_url, @headers, @session_token)
   end
 
   # Retrieves the list of rooms that an annoucement has been published to.
@@ -520,7 +523,7 @@ class FranklyClient
   #   The method returns a list of room objects ordered by id, which may be empty
   #   if the announcement haven't been published yet.
   def read_announcement_room_list(announcement_id)
-    JSON.parse Announcement.read_announcement_room_list(@headers, @session_token, announcement_id)
+    JSON.parse Announcement.read_announcement_room_list(@base_url, @headers, @session_token, announcement_id)
   end
 
   # Creates a new message object in the room with id specified as first argument.
@@ -536,7 +539,7 @@ class FranklyClient
   # @return [Hash]
   #   The method returns a hash that represents the newly created message.
   def create_room_message(room_id, payload)
-    JSON.parse Message.create_room_message(@headers, @session_token, room_id, payload)
+    JSON.parse Message.create_room_message(@base_url, @headers, @session_token, room_id, payload)
   end
 
   # Creates a new message object in the room with id specified as first argument.
@@ -552,7 +555,7 @@ class FranklyClient
   # @return [Array]
   #   The method returns an array of room hashes which may be empty if no messages satisfy the query.
   def read_room_message_list(room_id, params)
-    JSON.parse Message.read_room_message_list(@headers, @session_token, room_id, params)
+    JSON.parse Message.read_room_message_list(@base_url, @headers, @session_token, room_id, params)
   end
 
   # Creates a new file object on Frankly servers and returns that object.
@@ -565,7 +568,7 @@ class FranklyClient
   # @return [Hash]
   #   The method returns a hash that represents the newly created file.
   def create_file(payload)
-    JSON.parse Files.create_file(@headers, @session_token, payload.to_json)
+    JSON.parse Files.create_file(@base_url, @headers, @session_token, payload.to_json)
   end
 
   # Creates a new file object on Frankly servers and returns that object.
@@ -591,7 +594,7 @@ class FranklyClient
   # @return [nil]
   #   The method doesn't return anything on success and throws an exception on failure.
   def update_file(destination_url, file_obj, file_size, mime_type, encoding = nil)
-    Files.upload_file(@headers, @session_token, destination_url, file_obj, file_size, mime_type, encoding)
+    Files.upload_file(@base_url, @headers, @session_token, destination_url, file_obj, file_size, mime_type, encoding)
   end
 
   # Creates a new file object on Frankly servers and returns that object.
@@ -607,7 +610,7 @@ class FranklyClient
   # @return [nil]
   #   The method doesn't return anything on success and throws an exception on failure.
   def update_file_from_path(destination_url, file_path)
-    Files.update_file_from_path(@headers, @session_token, destination_url, file_path)
+    Files.update_file_from_path(@base_url, @headers, @session_token, destination_url, file_path)
   end
 
   # This method is convenience wrapper for creating a new file object on the Frankly API and setting its content.
@@ -632,7 +635,7 @@ class FranklyClient
   # @return [Hash]
   #   The method returns a hash that represents the newly created file.
   def upload_file(file_obj, file_size, mime_type, encoding = nil, params)
-    Files.upload_file(@headers, @session_token, destination_url, file_obj, file_size, mime_type, encoding, params)
+    Files.upload_file(@base_url, @headers, @session_token, destination_url, file_obj, file_size, mime_type, encoding, params)
   end
 
   # This method is convenience wrapper for creating a new file object on the Frankly API and setting its content.
@@ -647,6 +650,6 @@ class FranklyClient
   # @return [Hash]
   #   The method returns a hash that represents the newly created file.
   def upload_file_from_path(file_path, params)
-    Files.upload_file_from_path(@headers, @session_token, file_path, params)
+    Files.upload_file_from_path(@base_url, @headers, @session_token, file_path, params)
   end
 end

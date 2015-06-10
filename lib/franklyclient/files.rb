@@ -24,11 +24,11 @@
 
 # @!visibility private
 class Files
-  def self.create_file(headers, sessionToken, payload)
+  def self.create_file(address, headers, sessionToken, payload)
     headers[:params] = { token: sessionToken }
     RestClient::Request.execute(
       method: 'post',
-      url: Util.build_url('files'),
+      url: Util.build_url(address, 'files'),
       headers: headers,
       payload: payload
     )
@@ -60,12 +60,12 @@ class Files
   end
 
   def self.upload_file(headers, sessionToken, file_obj, file_size, mime_type, encoding = nil, params)
-    cf = create_file(headers, sessionToken, params)
+    cf = create_file(address, headers, sessionToken, params)
     update_file(headers, sessionToken, cf['url'], file_obj, file_size, mime_type, encoding)
   end
 
   def self.upload_file_from_path(headers, sessionToken, file_path, params)
-    cf = create_file(headers, sessionToken, params)
+    cf = create_file(address, headers, sessionToken, params)
     update_file_from_path(headers, sessionToken, cf['url'], file_path)
   end
 end

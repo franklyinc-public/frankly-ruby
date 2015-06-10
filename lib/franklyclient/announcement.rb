@@ -23,50 +23,49 @@
 ##
 
 # @!visibility private
-class Rooms
-  def self.create_room(headers, sessionToken, payload)
+class Announcement
+  def self.create_announcement(address, headers, sessionToken, payload)
     headers[:params] = { token: sessionToken }
     RestClient::Request.execute(
       method: 'post',
-      url: Util.build_url('rooms'),
+      url: Util.build_url(address, 'announcements'),
       headers: headers,
       payload: payload
     )
   end
 
-  def self.read_room_list(headers, sessionToken)
+  def self.read_announcement(address, headers, sessionToken, announcement_id)
     headers[:params] = { token: sessionToken }
     RestClient::Request.execute(
       method: 'get',
-      url: Util.build_url('rooms'),
+      url: Util.build_url(address, 'announcements/' + announcement_id.to_s),
       headers: headers
     )
   end
 
-  def self.read_room(headers, sessionToken, room_id)
-    headers[:params] = { token: sessionToken }
-    RestClient::Request.execute(
-      method: 'get',
-      url: Util.build_url('rooms/' + room_id.to_s),
-      headers: headers
-    )
-  end
-
-  def self.update_room(headers, sessionToken, room_id, payload)
-    headers[:params] = { token: sessionToken }
-    RestClient::Request.execute(
-      method: 'put',
-      url: Util.build_url('rooms/' + room_id.to_s),
-      headers: headers,
-      payload: payload
-    )
-  end
-
-  def self.delete_room(headers, sessionToken, room_id)
+  def self.delete_announcement(address, headers, sessionToken, announcement_id)
     headers[:params] = { token: sessionToken }
     RestClient::Request.execute(
       method: 'delete',
-      url: Util.build_url('rooms/' + room_id.to_s),
+      url: Util.build_url(address, 'announcements/' + announcement_id.to_s),
+      headers: headers
+    )
+  end
+
+  def self.read_announcement_list(address, headers, sessionToken)
+    headers[:params] = { token: sessionToken }
+    RestClient::Request.execute(
+      method: 'get',
+      url: Util.build_url(address, 'announcements'),
+      headers: headers
+    )
+  end
+
+  def self.read_announcement_room_list(address, headers, sessionToken, announcement_id)
+    headers[:params] = { token: sessionToken }
+    RestClient::Request.execute(
+      method: 'get',
+      url: Util.build_url(address, 'announcements/' + announcement_id.to_s + '/rooms'),
       headers: headers
     )
   end

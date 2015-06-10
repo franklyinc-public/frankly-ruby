@@ -33,14 +33,14 @@ class FranklyClientTest < MiniTest::Unit::TestCase
   end
 
   def test_open
-    client = FranklyClient.new
+    client = FranklyClient.new(address='https://dev-app.franklychat.com/')
     client.open(@auth_key, @auth_secret)
     refute_equal('', client.instance_variable_get(:@sessionToken))
     client.close
   end
 
   def test_announcement_functions
-    client = FranklyClient.new
+    client = FranklyClient.new(address='https://dev-app.franklychat.com/')
     client.open(@auth_key, @auth_secret)
 
     room_title = 'test create room: ' + rand(36**4).to_s(36)
@@ -51,7 +51,7 @@ class FranklyClientTest < MiniTest::Unit::TestCase
     room = client.create_room(room_payload)
 
     announcement_payload = {
-      contextual: true,
+      sticky: true,
       contents: [
         {
           type:       'text/plain',
@@ -63,7 +63,7 @@ class FranklyClientTest < MiniTest::Unit::TestCase
     announcement = client.create_announcement(announcement_payload)
 
     assert_equal([{ 'type' => 'text/plain', 'value' => 'text' }], announcement['contents'])
-    assert_equal(true, announcement['contextual'])
+    assert_equal(true, announcement['sticky'])
     refute_equal(nil, announcement['created_on'])
     refute_equal(nil, announcement['id'])
     refute_equal(nil, announcement['updated_on'])
@@ -78,7 +78,7 @@ class FranklyClientTest < MiniTest::Unit::TestCase
     published_announcement = client.create_room_message(room['id'], announcement: announcement['id'])
 
     assert_equal([{ 'type' => 'text/plain', 'value' => 'text' }], published_announcement['contents'])
-    assert_equal(true, published_announcement['contextual'])
+    assert_equal(true, published_announcement['sticky'])
     refute_equal(nil, published_announcement['created_on'])
     refute_equal(nil, published_announcement['id'])
     assert_equal(room['id'], published_announcement['room_id'])
@@ -99,7 +99,7 @@ class FranklyClientTest < MiniTest::Unit::TestCase
   end
 
   def test_file_functions
-    client = FranklyClient.new
+    client = FranklyClient.new(address='https://dev-app.franklychat.com/')
     client.open(@auth_key, @auth_secret)
 
     file_payload = {
@@ -124,7 +124,7 @@ class FranklyClientTest < MiniTest::Unit::TestCase
   end
 
   def test_message_functions
-    fc = FranklyClient.new
+    fc = FranklyClient.new(address='https://dev-app.franklychat.com/')
     fc.open(@auth_key, @auth_secret)
 
     room_title = 'test create room: ' + rand(36**4).to_s(36)
@@ -145,7 +145,7 @@ class FranklyClientTest < MiniTest::Unit::TestCase
     m = fc.create_room_message(cr['id'], message_payload)
 
     assert_equal([{ 'type' => 'text/plain', 'value' => 'text' }], m['contents'])
-    assert_equal(false, m['contextual'])
+    assert_equal(false, m['sticky'])
     refute_equal(nil, m['created_on'])
     refute_equal(nil, m['id'])
     assert_equal(cr['id'], m['room_id'])
@@ -158,7 +158,7 @@ class FranklyClientTest < MiniTest::Unit::TestCase
   end
 
   def test_room_functions
-    fc = FranklyClient.new
+    fc = FranklyClient.new(address='https://dev-app.franklychat.com/')
     fc.open(@auth_key, @auth_secret)
 
     # Test room creation

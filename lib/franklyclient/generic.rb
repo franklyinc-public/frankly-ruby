@@ -24,51 +24,51 @@
 
 # @!visibility private
 class Generic
-  def self.create(headers, sessionToken, path, params, payload)
+  def self.create(address, headers, sessionToken, path, params, payload)
     headers[:params] = params
     headers[:params][:token] = sessionToken
     RestClient::Request.execute(
       method: 'post',
-      url: Util.build_url(path),
+      url: Util.build_url(address, path),
       headers: headers,
       payload: payload
     )
   end
 
-  def self.read(headers, sessionToken, path, params, payload)
+  def self.read(address, headers, sessionToken, path, params, payload)
     headers[:params] = params
     headers[:params][:token] = sessionToken
     RestClient::Request.execute(
       method: 'get',
-      url: Util.build_url(path),
+      url: Util.build_url(address, path),
       headers: headers,
       payload: payload
     )
   end
 
-  def self.update(headers, sessionToken, path, params, payload)
+  def self.update(address, headers, sessionToken, path, params, payload)
     headers[:params] = params
     headers[:params][:token] = sessionToken
     RestClient::Request.execute(
       method: 'put',
-      url: Util.build_url(path),
+      url: Util.build_url(address, path),
       headers: headers,
       payload: payload
     )
   end
 
-  def self.delete(headers, sessionToken, path, params, payload)
+  def self.delete(address, headers, sessionToken, path, params, payload)
     headers[:params] = params
     headers[:params][:token] = sessionToken
     RestClient::Request.execute(
       method: 'delete',
-      url: Util.build_url(path),
+      url: Util.build_url(address, path),
       headers: headers,
       payload: payload
     )
   end
 
-  def self.upload(headers, sessionToken, url, params, payload, content_length, content_type, content_encoding)
+  def self.upload(address, headers, sessionToken, url, params, payload, content_length, content_type, content_encoding)
     headers[:params] = params
     headers[:params][:token] = sessionToken
     headers['content-length'] = content_length
