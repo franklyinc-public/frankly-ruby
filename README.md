@@ -1,7 +1,7 @@
 Frankly Ruby SDK
 ============
 
-Ruby gem for interacting with the Frankly API.
+The Ruby gem makes it easy to create deeper Frankly chat integrations in your app by interacting with Frankly's server APIs for managing Rooms, Messages, and Users.
 
 
 Installation
