@@ -26,4 +26,4 @@ require 'frankly-ruby'
 Documentation
 -------------
 
-Please find the complete iOS integration guide at <a>http://franklyinc.github.io/frankly-ios</a>
+Please find the complete Ruby integration guide at <a>http://franklyinc.github.io/frankly-ruby</a>
