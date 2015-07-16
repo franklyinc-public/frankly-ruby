@@ -13,7 +13,7 @@ gem 'frankly-ruby', :git => 'git://github.com/franklyinc/frankly-ruby.git'
 ```
 then run
 ```
-bundle install
+$ bundle install
 ```
 
 
