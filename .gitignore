@@ -1,10 +1,10 @@
 # Yard files
 .yardoc
-franklyclient/doc
+frankly-gem/doc
 
 # Emacs files
 *~
 \#*
 
 # Compiled Gem
-franklyclient/franklyclient*.gem
+*.gem

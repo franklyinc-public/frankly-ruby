@@ -23,62 +23,43 @@
 ##
 
 # @!visibility private
-class Generic
-  def self.create(address, headers, sessionToken, path, params, payload)
-    headers[:params] = params
-    headers[:params][:token] = sessionToken
+
+class Message
+  def self.create_room_message(address, headers, room_id, payload)
+    if payload.key?(:announcement)
+      headers[:params] = {}
+      headers[:params][:announcement] = payload.delete(:announcement)
+    end
     RestClient::Request.execute(
       method: 'post',
-      url: Util.build_url(address, path),
+      url: Util.build_url(address, 'rooms/' + room_id.to_s + '/messages'),
       headers: headers,
-      payload: payload
+      payload: payload.to_json
     )
   end
 
-  def self.read(address, headers, sessionToken, path, params, payload)
+  def self.read_room_message_list(address, headers, room_id, params)
     headers[:params] = params
-    headers[:params][:token] = sessionToken
     RestClient::Request.execute(
       method: 'get',
-      url: Util.build_url(address, path),
-      headers: headers,
-      payload: payload
+      url: Util.build_url(address, 'rooms/' + room_id.to_s + '/messages'),
+      headers: headers
     )
   end
 
-  def self.update(address, headers, sessionToken, path, params, payload)
-    headers[:params] = params
-    headers[:params][:token] = sessionToken
+  def self.read_room_message(address, headers, room_id, message_id)
     RestClient::Request.execute(
-      method: 'put',
-      url: Util.build_url(address, path),
-      headers: headers,
-      payload: payload
+      method: 'get',
+      url: Util.build_url(address, 'rooms/' + room_id.to_s + '/messages/' + message_id.to_s),
+      headers: headers
     )
   end
 
-  def self.delete(address, headers, sessionToken, path, params, payload)
-    headers[:params] = params
-    headers[:params][:token] = sessionToken
+  def self.create_room_message_flag(address, headers, room_id, message_id)
     RestClient::Request.execute(
-      method: 'delete',
-      url: Util.build_url(address, path),
-      headers: headers,
-      payload: payload
-    )
-  end
-
-  def self.upload(address, headers, sessionToken, url, params, payload, content_length, content_type, content_encoding)
-    headers[:params] = params
-    headers[:params][:token] = sessionToken
-    headers['content-length'] = content_length
-    headers['content-type'] = content_type
-    headers['content-encoding'] = content_encoding
-    RestClient::Request.execute(
-      method: 'put',
-      url: url,
-      headers: headers,
-      payload: payload
+      method: 'post',
+      url: Util.build_url(address, 'rooms/' + room_id.to_s + '/messages/' + message_id.to_s + '/flag'),
+      headers: headers
     )
   end
 end

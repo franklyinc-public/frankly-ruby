@@ -28,21 +28,42 @@ require 'minitest/autorun'
 
 class FranklyClientTest < MiniTest::Unit::TestCase
   def setup
-    @auth_key = ENV['auth_key']
-    @auth_secret = ENV['auth_secret']
+    @app_key = ENV['FRANKLY_APP_KEY']
+    @app_secret = ENV['FRANKLY_APP_SECRET']
+    @test_url = Util.make_base_address ENV['FRANKLY_APP_HOST']
   end
 
   def test_open
-    client = FranklyClient.new(address='https://dev-app.franklychat.com/')
-    client.open(@auth_key, @auth_secret)
-    refute_equal('', client.instance_variable_get(:@sessionToken))
+    client = FranklyClient.new(@test_url)
+
+    # test with app secret and key
+    client.open(@app_key, @app_secret)
+    client.close
+
+    # test with identity_token
+    nonce = Util.parse_json_string Auth.nonce(URI(@test_url))
+    identity_token = generate_identity_token(@app_key, @app_secret, nonce, nil, 'admin')
+    client.open(identity_token)
     client.close
   end
 
   def test_announcement_functions
-    client = FranklyClient.new(address='https://dev-app.franklychat.com/')
-    client.open(@auth_key, @auth_secret)
+    client = FranklyClient.new(@test_url)
 
+    # test with app secret and key
+    client.open(@app_key, @app_secret)
+    t_announcement_functions(client)
+    client.close
+
+    # test with identity_token
+    nonce = Util.parse_json_string Auth.nonce(URI(@test_url))
+    identity_token = generate_identity_token(@app_key, @app_secret, nonce, nil, 'admin')
+    client.open(identity_token)
+    t_announcement_functions(client)
+    client.close
+  end
+
+  def t_announcement_functions(client)
     room_title = 'test create room: ' + rand(36**4).to_s(36)
     room_payload = {
       status: 'active',
@@ -99,9 +120,22 @@ class FranklyClientTest < MiniTest::Unit::TestCase
   end
 
   def test_file_functions
-    client = FranklyClient.new(address='https://dev-app.franklychat.com/')
-    client.open(@auth_key, @auth_secret)
+    client = FranklyClient.new(@test_url)
 
+    # test with app secret and key
+    client.open(@app_key, @app_secret)
+    t_file_functions(client)
+    client.close
+
+    # test with identity_token
+    nonce = Util.parse_json_string Auth.nonce(URI(@test_url))
+    identity_token = generate_identity_token(@app_key, @app_secret, nonce, nil, 'admin')
+    client.open(identity_token)
+    t_file_functions(client)
+    client.close
+  end
+
+  def t_file_functions(client)
     file_payload = {
       category: 'useravatar',
       type: 'image'
@@ -120,19 +154,31 @@ class FranklyClientTest < MiniTest::Unit::TestCase
     # my_file = '/file/path.jpg'
     # response = client.update_file_from_path(file['url'], my_file)
     # assert_equal(200, response.code)
-    # client.close
   end
 
   def test_message_functions
-    fc = FranklyClient.new(address='https://dev-app.franklychat.com/')
-    fc.open(@auth_key, @auth_secret)
+    client = FranklyClient.new(@test_url)
 
+    # test with app secret and key
+    client.open(@app_key, @app_secret)
+    t_message_functions(client)
+    client.close
+
+    # test with identity_token
+    nonce = Util.parse_json_string Auth.nonce(URI(@test_url))
+    identity_token = generate_identity_token(@app_key, @app_secret, nonce, nil, 'admin')
+    client.open(identity_token)
+    t_message_functions(client)
+    client.close
+  end
+
+  def t_message_functions(client)
     room_title = 'test create room: ' + rand(36**4).to_s(36)
     room_payload = {
       status: 'active',
       title: room_title
     }
-    cr = fc.create_room(room_payload)
+    room = client.create_room(room_payload)
 
     message_payload = {
       contents: [
@@ -142,48 +188,77 @@ class FranklyClientTest < MiniTest::Unit::TestCase
         }
       ]
     }
-    m = fc.create_room_message(cr['id'], message_payload)
+    message = client.create_room_message(room['id'], message_payload)
 
-    assert_equal([{ 'type' => 'text/plain', 'value' => 'text' }], m['contents'])
-    assert_equal(false, m['sticky'])
-    refute_equal(nil, m['created_on'])
-    refute_equal(nil, m['id'])
-    assert_equal(cr['id'], m['room_id'])
-    refute_equal(nil, m['sent_on'])
-    refute_equal(nil, m['updated_on'])
-    assert_equal(1, m['version'])
+    assert_equal([{ 'type' => 'text/plain', 'value' => 'text' }], message['contents'])
+    assert_equal(false, message['sticky'])
+    refute_equal(nil, message['created_on'])
+    refute_equal(nil, message['id'])
+    assert_equal(room['id'], message['room_id'])
+    refute_equal(nil, message['sent_on'])
+    refute_equal(nil, message['updated_on'])
+    assert_equal(1, message['version'])
 
-    fc.delete_room(cr['id'])
-    fc.close
+    read_message = client.read_room_message(room['id'], message['id'])
+
+    assert_equal(message, read_message)
+    begin
+      client.create_room_message_flag(room['id'], message['id'])
+    rescue => e
+    end
+
+    assert_equal(e.response.code, 400)
+
+    client.delete_room(room['id'])
   end
 
   def test_room_functions
-    fc = FranklyClient.new(address='https://dev-app.franklychat.com/')
-    fc.open(@auth_key, @auth_secret)
+    client = FranklyClient.new(@test_url)
 
+    # test with app secret and key
+    client.open(@app_key, @app_secret)
+    t_room_functions(client)
+    client.close
+
+    # test with identity_token
+    nonce = Util.parse_json_string Auth.nonce(URI(@test_url))
+    identity_token = generate_identity_token(@app_key, @app_secret, nonce, nil, 'admin')
+    client.open(identity_token)
+    t_room_functions(client)
+    client.close
+  end
+
+  def t_room_functions(client)
     # Test room creation
     create_room_title = 'test create room: ' + rand(36**4).to_s(36)
     create_payload = {
       status: 'active',
       title: create_room_title
     }
-    cr = fc.create_room(create_payload)
-    assert_equal(nil, cr['avatar_image_url'])
-    refute_equal(nil, cr['created_on'])
-    assert_equal(nil, cr['description'])
-    assert_equal(false, cr['featured'])
-    assert_equal(nil, cr['featured_image_url'])
-    refute_equal(nil, cr['id'])
-    assert_equal(0, cr['list_position'])
-    assert_equal('active', cr['status'])
-    assert_equal(false, cr['subscribed'])
-    assert_equal(create_room_title, cr['title'])
-    refute_equal(nil, cr['updated_on'])
-    assert_equal(1, cr['version'])
+
+    room = client.create_room(create_payload)
+    assert_equal(nil, room['avatar_image_url'])
+    refute_equal(nil, room['created_on'])
+    assert_equal(nil, room['description'])
+    assert_equal(false, room['featured'])
+    assert_equal(nil, room['featured_image_url'])
+    refute_equal(nil, room['id'])
+    assert_equal(0, room['list_position'])
+    assert_equal('active', room['status'])
+    assert_equal(false, room['subscribed'])
+    assert_equal(create_room_title, room['title'])
+    refute_equal(nil, room['updated_on'])
+    assert_equal(1, room['version'])
 
     # Test room read
-    rr = fc.read_room(cr['id'])
-    assert_equal(cr, rr)
+    read_room = client.read_room(room['id'])
+    assert_equal(room, read_room)
+
+    # Test room count
+    room_count = client.read_room_count(room['id'])
+    refute_equal(nil, room_count['active'])
+    refute_equal(nil, room_count['online'])
+    refute_equal(nil, room_count['subscribed'])
 
     # Test room update
     update_room_title = 'test update room: ' + rand(36**4).to_s(36)
@@ -192,28 +267,216 @@ class FranklyClientTest < MiniTest::Unit::TestCase
       title: update_room_title,
       list_position: 1
     }
-    ur = fc.update_room(cr['id'], update_payload)
-    assert_equal(nil, ur['avatar_image_url'])
-    refute_equal(nil, ur['created_on'])
-    assert_equal('updated description', ur['description'])
-    assert_equal(false, ur['featured'])
-    assert_equal(nil, ur['featured_image_url'])
-    refute_equal(nil, ur['id'])
-    assert_equal(1, ur['list_position'])
-    assert_equal('active', ur['status'])
-    assert_equal(false, ur['subscribed'])
-    assert_equal(update_room_title, ur['title'])
-    refute_equal(nil, ur['updated_on'])
-    assert_equal(2, ur['version'])
+    updated_room = client.update_room(room['id'], update_payload)
+    assert_equal(nil, updated_room['avatar_image_url'])
+    refute_equal(nil, updated_room['created_on'])
+    assert_equal('updated description', updated_room['description'])
+    assert_equal(false, updated_room['featured'])
+    assert_equal(nil, updated_room['featured_image_url'])
+    refute_equal(nil, updated_room['id'])
+    assert_equal(1, updated_room['list_position'])
+    assert_equal('active', updated_room['status'])
+    assert_equal(false, updated_room['subscribed'])
+    assert_equal(update_room_title, updated_room['title'])
+    refute_equal(nil, updated_room['updated_on'])
+    assert_equal(2, updated_room['version'])
 
     # Test room list read
-    rl = fc.read_room_list
-    assert_equal(true, rl.include?(ur))
+    room_list = client.read_room_list
+    assert_equal(true, room_list.include?(updated_room))
 
     # Test room delete
-    fc.delete_room(cr['id'])
-    rl = fc.read_room_list
-    refute_equal(true, rl.include?(ur))
-    fc.close
+    client.delete_room(room['id'])
+    room_list = client.read_room_list
+    refute_equal(true, room_list.include?(updated_room))
+  end
+
+  def test_user_functions
+    client = FranklyClient.new(@test_url)
+
+    # test with app secret and key
+    client.open(@app_key, @app_secret)
+    t_user_functions(client)
+    client.close
+
+    # test with identity_token
+    nonce = Util.parse_json_string Auth.nonce(URI(@test_url))
+    identity_token = generate_identity_token(@app_key, @app_secret, nonce, nil, 'admin')
+    client.open(identity_token)
+    t_user_functions(client)
+    client.close
+  end
+
+  def t_user_functions(client)
+    # Test room creation
+    create_payload = {
+      display_name: 'test_name'
+    }
+    user = client.create_user(create_payload)
+
+    assert_equal(nil, user['avatar_image_url'])
+    refute_equal(nil, user['created_on'])
+    assert_equal('test_name', user['display_name'])
+    refute_equal(nil, user['id'])
+    refute_equal(nil, user['updated_on'])
+    assert_equal(1, user['version'])
+
+    # Test user read
+    read_user = client.read_user(user['id'])
+    assert_equal(user, read_user)
+
+    # Test user update
+    update_payload = {
+      display_name: 'updated_name'
+    }
+
+    update_user = client.update_user(user['id'], update_payload)
+    assert_equal(nil, update_user['avatar_image_url'])
+    refute_equal(nil, update_user['created_on'])
+    assert_equal('updated_name', update_user['display_name'])
+    refute_equal(nil, update_user['id'])
+    refute_equal(user['updated_on'], update_user['updated_on'])
+    assert_equal(2, update_user['version'])
+
+    # Test user ban
+    ban = client.read_user_ban(user['id'])
+    assert_equal(nil, ban['avatar_image_url'])
+    refute_equal(nil, ban['created_on'])
+    refute_equal(nil, ban['updated_on'])
+    assert_equal(1, ban['version'])
+
+    # Test user delete
+    client.delete_user(user['id'])
+    begin
+      client.read_user(user['id'])
+    rescue => e
+    end
+    assert_equal(e.response.code, 404)
+  end
+
+  def test_session_functions
+    client = FranklyClient.new(@test_url)
+
+    # test with app secret and key
+    client.open(@app_key, @app_secret)
+    t_session_functions(client)
+    client.close
+
+    # test with identity_token
+    nonce = Util.parse_json_string Auth.nonce(URI(@test_url))
+    identity_token = generate_identity_token(@app_key, @app_secret, nonce, nil, 'admin')
+    client.open(identity_token)
+    t_session_functions(client)
+    client.close
+  end
+
+  def t_session_functions(client)
+    client = FranklyClient.new(@test_url)
+    client.open(@app_key, @app_secret)
+
+    client_session = client.read_session
+    refute_equal(nil, client_session['app'])
+    refute_equal(nil, client_session['app_id'])
+    refute_equal(nil, client_session['app_user_id'])
+    refute_equal(nil, client_session['created_on'])
+    refute_equal(nil, client_session['expires_on'])
+    refute_equal(nil, client_session['platform'])
+    refute_equal(nil, client_session['role'])
+    refute_equal(nil, client_session['seed'])
+    refute_equal(nil, client_session['user'])
+    refute_equal(nil, client_session['version'])
+
+    client.close
+  end
+
+  def test_room_roles
+    client = FranklyClient.new(@test_url)
+
+    # test with app secret and key
+    client.open(@app_key, @app_secret)
+    t_room_roles(client)
+    client.close
+
+    # test with identity_token
+    nonce = Util.parse_json_string Auth.nonce(URI(@test_url))
+    identity_token = generate_identity_token(@app_key, @app_secret, nonce, nil, 'admin')
+    client.open(identity_token)
+    t_room_roles(client)
+    client.close
+  end
+
+  def t_room_roles(client)
+    user_payload = {
+      display_name: 'test_name'
+    }
+    user = client.create_user(user_payload)
+
+    room_title = 'test room: ' + rand(36**4).to_s(36)
+    room_payload = {
+      status: 'active',
+      title: room_title
+    }
+    room = client.create_room(room_payload)
+
+    # Test Owner Role
+    client.create_room_owner(room['id'], user['id'])
+    owner_list = client.read_room_owner_list(room['id'])
+    assert_equal(true, owner_list.include?(user))
+
+    client.delete_room_owner(room['id'], user['id'])
+    owner_list = client.read_room_owner_list(room['id'])
+    refute_equal(true, owner_list.include?(user))
+
+    # Test Moderator Role
+    client.create_room_moderator(room['id'], user['id'])
+    moderator_list = client.read_room_moderator_list(room['id'])
+    assert_equal(true, moderator_list.include?(user))
+
+    client.delete_room_moderator(room['id'], user['id'])
+    moderator_list = client.read_room_moderator_list(room['id'])
+    refute_equal(true, moderator_list.include?(user))
+
+    # Test Member Role
+    client.create_room_member(room['id'], user['id'])
+    member_list = client.read_room_member_list(room['id'])
+    assert_equal(true, member_list.include?(user))
+
+    client.delete_room_member(room['id'], user['id'])
+    member_list = client.read_room_member_list(room['id'])
+    refute_equal(true, member_list.include?(user))
+
+    # Test Member Role
+    client.create_room_announcer(room['id'], user['id'])
+    announcer_list = client.read_room_announcer_list(room['id'])
+    assert_equal(true, announcer_list.include?(user))
+
+    client.delete_room_announcer(room['id'], user['id'])
+    announcer_list = client.read_room_announcer_list(room['id'])
+    refute_equal(true, announcer_list.include?(user))
+    client.close
+  end
+
+  def test_app_functions
+    client = FranklyClient.new(@test_url)
+
+    # test with app secret and key
+    client.open(@app_key, @app_secret)
+    t_app_functions(client)
+    client.close
+
+    # test with identity_token
+    nonce = Util.parse_json_string Auth.nonce(URI(@test_url))
+    identity_token = generate_identity_token(@app_key, @app_secret, nonce, nil, 'admin')
+    client.open(identity_token)
+    t_app_functions(client)
+    client.close
+  end
+
+  def t_app_functions(client)
+    client_session = client.read_session
+
+    app = client.read_app(client_session['app']['id'])
+    assert_equal(app, client_session['app'])
+    client.close
   end
 end

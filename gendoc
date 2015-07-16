@@ -1,3 +1,0 @@
-#!/bin/sh
-cd franklyclient
-exec yard doc --no-private --one-file --title 'frankly-ruby' lib/franklyclient.rb

@@ -25,13 +25,13 @@
 # @!visibility private
 class Auth
   def self.nonce(address)
-    RestClient.get Util.build_url(address, 'auth/nonce')
+    headers = Util.build_headers(address)
+    RestClient.get(Util.build_url(address, 'auth/nonce'), headers)
   end
 
-  def self.open(address, identityToken)
-    headers = Util.build_headers
-    headers[:params] = { identity_token: identityToken }
-    session = RestClient.get(Util.build_url(address, 'auth'), headers)
-    session
+  def self.open(address, identity_token)
+    headers = Util.build_headers(address)
+    headers[:params] = { identity_token: identity_token }
+    RestClient.get(Util.build_url(address, 'auth'), headers)
   end
 end

@@ -1,17 +1,23 @@
+require File.expand_path('../lib/frankly-ruby/version', __FILE__)
+
 Gem::Specification.new do |s|
   s.name        = 'frankly-ruby'
-  s.version     = '1.0.2'
+  s.version     =  Frankly::VERSION
   s.summary     = 'Frankly Ruby SDK'
   s.authors     = ['Michael Phox', 'Achille Roussel']
   s.files       = [
     'lib/frankly-ruby.rb',
     'lib/frankly-ruby/announcement.rb',
+    'lib/frankly-ruby/apps.rb',
     'lib/frankly-ruby/auth.rb',
     'lib/frankly-ruby/files.rb',
     'lib/frankly-ruby/generic.rb',
     'lib/frankly-ruby/message.rb',
     'lib/frankly-ruby/rooms.rb',
-    'lib/frankly-ruby/util.rb'
+    'lib/frankly-ruby/sessions.rb',
+    'lib/frankly-ruby/users.rb',
+    'lib/frankly-ruby/util.rb',
+    'lib/frankly-ruby/version.rb'
   ]
   s.homepage    =
     'https://github.com/franklyinc/frankly-ruby/'

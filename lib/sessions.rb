@@ -23,16 +23,20 @@
 ##
 
 # @!visibility private
-class Util
-  def self.build_url(base_url, path)
-    base_url + path
+class Sessions
+  def self.read_session(address, headers)
+    RestClient::Request.execute(
+      method: 'get',
+      url: Util.build_url(address, 'session'),
+      headers: headers
+    )
   end
 
-  def self.build_headers
-    headers = {}
-    headers['accept'] = 'application/json'
-    headers['content-type'] = 'application/json'
-    headers['user-agent'] = 'Frankly-SDK/1.0.0 (Ruby)'
-    headers
+  def self.delete_session(address, headers)
+    RestClient::Request.execute(
+      method: 'delete',
+      url: Util.build_url(address, 'session'),
+      headers: headers
+    )
   end
 end

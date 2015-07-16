@@ -23,50 +23,47 @@
 ##
 
 # @!visibility private
-class Announcement
-  def self.create_announcement(address, headers, sessionToken, payload)
-    headers[:params] = { token: sessionToken }
+class Files
+  def self.create_file(address, headers, payload)
     RestClient::Request.execute(
       method: 'post',
-      url: Util.build_url(address, 'announcements'),
+      url: Util.build_url(address, 'files'),
       headers: headers,
       payload: payload
     )
   end
 
-  def self.read_announcement(address, headers, sessionToken, announcement_id)
-    headers[:params] = { token: sessionToken }
+  def self.update_file(headers, destination_url, file_obj, file_size, mime_type, encoding = nil)
+    headers['content-length'] = file_size
+    headers['content-type'] = mime_type
+    headers['content-encoding'] = encoding
+
+    file_bin = file_obj.read
+    file_obj.close
+
     RestClient::Request.execute(
-      method: 'get',
-      url: Util.build_url(address, 'announcements/' + announcement_id.to_s),
-      headers: headers
+      method: 'put',
+      url: destination_url,
+      headers: headers,
+      payload: file_bin
     )
   end
 
-  def self.delete_announcement(address, headers, sessionToken, announcement_id)
-    headers[:params] = { token: sessionToken }
-    RestClient::Request.execute(
-      method: 'delete',
-      url: Util.build_url(address, 'announcements/' + announcement_id.to_s),
-      headers: headers
-    )
+  def self.update_file_from_path(headers, destination_url, file_path)
+    file_obj = File.open(file_path, 'rb')
+    file_size = File.size(file_path)
+    mime_type = MimeMagic.by_magic(file_obj)
+    encoding = CharlockHolmes::EncodingDetector.detect(File.read(file_path))[:type]
+    update_file(headers, destination_url, file_obj, file_size, mime_type, encoding)
   end
 
-  def self.read_announcement_list(address, headers, sessionToken)
-    headers[:params] = { token: sessionToken }
-    RestClient::Request.execute(
-      method: 'get',
-      url: Util.build_url(address, 'announcements'),
-      headers: headers
-    )
+  def self.upload_file(address, headers, file_obj, file_size, mime_type, encoding = nil, params)
+    cf = create_file(address, headers, params)
+    update_file(headers, cf['url'], file_obj, file_size, mime_type, encoding)
   end
 
-  def self.read_announcement_room_list(address, headers, sessionToken, announcement_id)
-    headers[:params] = { token: sessionToken }
-    RestClient::Request.execute(
-      method: 'get',
-      url: Util.build_url(address, 'announcements/' + announcement_id.to_s + '/rooms'),
-      headers: headers
-    )
+  def self.upload_file_from_path(address, headers, file_path, params)
+    cf = create_file(address, headers, params)
+    update_file_from_path(headers, cf['url'], file_path)
   end
 end
