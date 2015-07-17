@@ -51,7 +51,7 @@ class Util
 
   def self.make_base_address(address)
     case address
-    when 'https'
+    when 'https:'
       return 'https://app.franklychat.com/'
     end
 
