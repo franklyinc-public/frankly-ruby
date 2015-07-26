@@ -25,13 +25,15 @@ require 'frankly-ruby'
 
 
 ###Documentation
-
-Please find the complete Ruby integration guide at <a>http://franklyinc.github.io/frankly-ruby</a>.
+Here are the resources available:
+  1. Complete Frankly Chat Service integration guide - [franklyinc.github.io](http://franklyinc.github.io)
+  2. Frankly Ruby gem API reference -  [franklyinc.github.io/APIReference-Ruby.html/](http://franklyinc.github.io/APIReference-Ruby.html)
+  3. Frankly Chat Service Authentication guide - [franklyinc.github.io/Auth.html](http://franklyinc.github.io/Auth.html)
 
 
 ###Making Improvements
 
-Frankly Platform provides a great way for brands to integrate chat in their iOS, Android, and Web apps in order to build and engage their communities. But of course, that's not possible without developers like you. Have ideas for improving the integration experience? Let us know by creating a Github issue in this repo!
+Frankly Platform provides a great way for brands to integrate chat in their iOS, Android, and Web apps in order to build and engage their communities. But of course, that's not possible without developers like you. Have ideas for improving the integration experience? Let us know by [creating a Github issue](https://github.com/franklyinc/frankly-ruby/issues/new) in this repo!
 
 
 ###Access & Support
